@@ -10,7 +10,7 @@ double dt = 0.2;
 
 double ref_cte = 0;
 double ref_epsi = 0;
-double ref_v=20;
+double ref_v=40;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -50,12 +50,12 @@ class FG_eval {
     //add costs
     //Define cost related to reference state, smooth magnitude and
     //reward smoothness
-     double c_cte = 500;
-     double c_epsi = 500;
+     double c_cte = 100;
+     double c_epsi = 100;
      double c_v = 1;
      double c_delta = 1;
      double c_a = 1;
-     double c_delta_d = 1000;
+     double c_delta_d = 10000;
      double c_a_d = 1;    
     
 
@@ -123,7 +123,7 @@ class FG_eval {
       }
       */
 
-      AD<double> psi_des = CppAD::atan(coeffs[1]); //+ 2*coeffs[2] * x0);// + 3*coeffs[3] * x0 * x0);
+      AD<double> psi_des = CppAD::atan(coeffs[1] + 2*coeffs[2] * x0 + 3*coeffs[3] * x0 * x0);
 
       fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
       fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);

@@ -154,13 +154,13 @@ int main() {
           
           steer_value = -vars[0]/deg2rad(25);
           throttle_value = vars[1];
-
+          cout<<"steer value is "<< steer_value<<endl;
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
           
           msgJson["steering_angle"] = steer_value;
-          msgJson["throttle"] = vars[1];
+          msgJson["throttle"] = throttle_value;
 
           //Display the MPC predicted trajectory 
           vector<double> mpc_x_vals;
@@ -176,16 +176,16 @@ int main() {
 
 
           
-          vector<double> next_x_vals = ptsx;
-          vector<double> next_y_vals = ptsy;
+          //vector<double> next_x_vals = ptsx;
+          //vector<double> next_y_vals = ptsy;
           double poly_inc = 2.5;
           int num_points = 25;
-          /*
+          
           for(int i = 1; i<num_points; i++) {
             next_x_vals.push_back(poly_inc*i);
             next_y_vals.push_back(polyeval(coeffs, poly_inc*i));
 
-          }*/
+          }
 
           // the points in the simulator are connected by a Green line
 
