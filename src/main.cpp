@@ -176,8 +176,8 @@ int main() {
 
 
           
-          //vector<double> next_x_vals = ptsx;
-          //vector<double> next_y_vals = ptsy;
+          vector<double> next_x_vals;// = ptsx;
+          vector<double> next_y_vals;// = ptsy;
           double poly_inc = 2.5;
           int num_points = 25;
           
