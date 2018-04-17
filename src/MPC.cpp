@@ -5,12 +5,12 @@ using CppAD::AD;
 using namespace std;
 
 // TODO: Set the timestep length and duration
-size_t N = 10;
-double dt = 0.1;
+size_t N = 50;
+double dt = 0.2;
 
 double ref_cte = 0;
 double ref_epsi = 0;
-double ref_v=50;
+double ref_v=20;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -50,23 +50,31 @@ class FG_eval {
     //add costs
     //Define cost related to reference state, smooth magnitude and
     //reward smoothness
+     double c_cte = 500;
+     double c_epsi = 500;
+     double c_v = 1;
+     double c_delta = 1;
+     double c_a = 1;
+     double c_delta_d = 1000;
+     double c_a_d = 1;    
+    
 
      for(size_t i = 0; i<N; i++) {
-        fg[0] += 2000*CppAD::pow(vars[cte_start+i] - ref_cte,4);
-        fg[0] += 2000*CppAD::pow(vars[epsi_start+i] - ref_epsi,4); // minimize error from trajectory
-        fg[0] += CppAD::pow(vars[v_start+i] - ref_v,2); //forces car to keep moving
+        fg[0] += c_cte * CppAD::pow(vars[cte_start+i] - ref_cte,2);
+        fg[0] += c_epsi * CppAD::pow(vars[epsi_start+i] - ref_epsi,2); // minimize error from trajectory
+        fg[0] += c_v * CppAD::pow(vars[v_start+i] - ref_v,2); //forces car to keep moving
     }
     //penalize actualize magnitudes to smooth
     for(size_t i = 0; i<N-1; i++) {
-        fg[0] += 10*CppAD::pow(vars[delta_start+i],2);
-        fg[0] += 10*CppAD::pow(vars[a_start+i],2);
+        fg[0] += c_delta * CppAD::pow(vars[delta_start+i],2);
+        fg[0] += c_a * CppAD::pow(vars[a_start+i],2);
     }
 
   
     //penalize actualizer changes to smooth
     for(size_t i = 0; i<N-2; i++) {
-        fg[0] += 100*CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i],2);
-        fg[0] += CppAD::pow(vars[a_start + i + 1] - vars[a_start + i],2);
+        fg[0] += c_delta_d * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i],2);
+        fg[0] += c_a_d * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i],2);
     }
 
 
@@ -81,7 +89,7 @@ class FG_eval {
     fg[1 + epsi_start] = vars[epsi_start];
 
 
-    for (int t = 1; t < N; t++) {
+    for (size_t t = 1; t < N; t++) {
       AD<double> x1 = vars[x_start + t];
       AD<double> x0 = vars[x_start + t - 1];
 
@@ -115,19 +123,19 @@ class FG_eval {
       }
       */
 
-      AD<double> psi_des = CppAD::atan(coeffs[1] + 2*coeffs[2] * x0 + 3*coeffs[3] * x0 * x0);
+      AD<double> psi_des = CppAD::atan(coeffs[1]); //+ 2*coeffs[2] * x0);// + 3*coeffs[3] * x0 * x0);
 
       fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
       fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
       //note that the update for psi  should usually have psi0 + v0
       //but the sign is flipped because of the simulator.
-      fg[1 + psi_start + t] = psi1 -  (psi0 - v0 / Lf * delta0 * dt);
+      fg[1 + psi_start + t] = psi1 -  (psi0 + v0 / Lf * delta0 * dt);
       fg[1 + v_start + t] = v1 - (v0 + a0*dt);
       
 
-      fg[1 + cte_start + t] = cte1 - (f0 - y0 + v0 * CppAD::sin(epsi0)*dt);
+      fg[1 + cte_start + t] = cte1 - ((f0 - y0) + v0 * CppAD::sin(epsi0)*dt);
       
-      fg[1 + epsi_start + t] = epsi1 - (psi0 - psi_des - v0 / Lf * delta0 * dt);
+      fg[1 + epsi_start + t] = epsi1 - ((psi0 - psi_des) + v0 / Lf * delta0 * dt);
     }
   }
 };
@@ -140,7 +148,6 @@ MPC::~MPC() {}
 
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
-  size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
   // TODO: Set the number of model variables (includes both states and inputs).
@@ -268,7 +275,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
    result.push_back(solution.x[delta_start]);
    result.push_back(solution.x[a_start]);
-   for(int i = 0; i < N-1; i++){
+   for(size_t i = 0; i < N-1; i++){
      result.push_back(solution.x[x_start + i + 1]);
      result.push_back(solution.x[y_start + i + 1]);
    }

@@ -119,22 +119,22 @@ int main() {
 
 
           //Shift reference frame to car's local
-          for(int i = 0; i< ptsx.size(); i++ ) {
+          for(size_t i = 0; i< ptsx.size(); i++ ) {
             double shift_x = ptsx[i] - px;
             double shift_y = ptsy[i] - py;
 
             ptsx[i] = (shift_x * cos(0-psi) - shift_y * sin(0-psi));
             ptsy[i] = (shift_x * sin(0-psi) + shift_y * cos(0-psi));
           }
-          //VectorXd xvals = VectorXd::Map(ptsx.data(), ptsx.size());
-          //VectorXd yvals = VectorXd::Map(ptsy.data(), ptsy.size());
-          VectorXd xvals = VectorXd(6);
-          VectorXd yvals = VectorXd(6);
-
-          for(int i = 0; i< ptsx.size(); i++){
+          VectorXd xvals = VectorXd::Map(ptsx.data(), ptsx.size());
+          VectorXd yvals = VectorXd::Map(ptsy.data(), ptsy.size());
+          //VectorXd xvals = VectorXd(6);
+          //VectorXd yvals = VectorXd(6);
+          /*
+          for(size_t i = 0; i< ptsx.size(); i++){
              xvals(i) = ptsx.at(i);
              yvals(i) = ptsy.at(i);
-          }
+          }*/
           auto coeffs = polyfit(xvals, yvals,3);
           double cte = polyeval(coeffs, 0.0);// approx for car being at origin
           /*
@@ -152,7 +152,7 @@ int main() {
           
           auto vars = mpc.Solve(state, coeffs);
           
-          steer_value = vars[0]/deg2rad(25);
+          steer_value = -vars[0]/deg2rad(25);
           throttle_value = vars[1];
 
           json msgJson;
@@ -176,16 +176,16 @@ int main() {
 
 
           
-          vector<double> next_x_vals;
-          vector<double> next_y_vals;
+          vector<double> next_x_vals = ptsx;
+          vector<double> next_y_vals = ptsy;
           double poly_inc = 2.5;
           int num_points = 25;
-
+          /*
           for(int i = 1; i<num_points; i++) {
             next_x_vals.push_back(poly_inc*i);
             next_y_vals.push_back(polyeval(coeffs, poly_inc*i));
 
-          }
+          }*/
 
           // the points in the simulator are connected by a Green line
 
