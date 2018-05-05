@@ -5,8 +5,8 @@ using CppAD::AD;
 using namespace std;
 
 // TODO: Set the timestep length and duration
-size_t N = 20;
-double dt = .5;
+size_t N = 15;
+double dt = .17;
 
 double ref_cte = 0;
 double ref_epsi = 0;
@@ -50,12 +50,12 @@ class FG_eval {
     //add costs
     //Define cost related to reference state, smooth magnitude and
     //reward smoothness
-     double c_cte = 1000;
-     double c_epsi = 1000;
+     double c_cte = 2000;
+     double c_epsi = 2000;
      double c_v = 1;
      double c_delta = 5;
      double c_a = 1;
-     double c_delta_d = 100;
+     double c_delta_d = 200;
      double c_a_d = 1;    
     
 
@@ -111,18 +111,9 @@ class FG_eval {
       //note the actions are only at time t
       AD<double> delta0 = vars[delta_start + t -1];
       AD<double> a0 = vars[a_start + t -1];
-      /*
-      AD<double> f0 = 0;
-      for(int i = 0; i< coeffs.size(); i++) {
-        f0 += coeffs(i) * CppAD::pow(x0,i);
-      }*/
+    
       AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * x0 * x0 + coeffs[3] * x0 * x0 * x0;
-      /*
-      AD<double> psi_des = 0;
-      for(int i = 1; i< coeffs.size(); i++){
-         psi_des += i*coeffs(i) * CppAD::pow(x0,i-1);
-      }
-      */
+      
 
       AD<double> psi_des = CppAD::atan(coeffs[1] + 2*coeffs[2] * x0 + 3*coeffs[3] * x0 * x0);
 
@@ -197,8 +188,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // degrees (values in radians).
   // NOTE: Feel free to change this to something else.
   for (size_t i = delta_start; i < a_start; i++) {
-    vars_lowerbound[i] = -0.436332;//*Lf;
-    vars_upperbound[i] = 0.436332;//*Lf;
+    vars_lowerbound[i] = -0.436332;
+    vars_upperbound[i] = 0.436332;
   }
 
   // Acceleration/decceleration upper and lower limits.
@@ -250,7 +241,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   options += "Sparse  true        reverse\n";
   // NOTE: Currently the solver has a maximum time limit of 0.5 seconds.
   // Change this as you see fit.
-  options += "Numeric max_cpu_time          1000\n";
+  options += "Numeric max_cpu_time          100\n";
 
   // place to return solution
   CppAD::ipopt::solve_result<Dvector> solution;
@@ -274,27 +265,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // creates a 2 element double vector.
   vector<double> result;
    
-   double avg_delta = 0;
-   double avg_a = 0;
-   size_t i_m = 15;
-   double m = 15;   
-/*
-   for(size_t i = 0; i < N-1; i++) {
-     cout<<"predicted delta is "<<solution.x[delta_start + i]<<endl;
-   }
-   for(size_t i = 0; i < N-1; i++) {
-    cout<<"predicted accel is "<< solution.x[a_start +i]<<endl;
-   } 
-   
-   for(size_t i = 0; i < i_m; i++) {
-      avg_delta += solution.x[delta_start + i];
-   }
-      avg_delta /= m;
-   for(size_t i = 0; i < i_m; i++) {
-      avg_a += solution.x[a_start + i];
-   }
-      avg_a /= m;
-*/
+ 
+
    result.push_back(solution.x[delta_start]);
    result.push_back(solution.x[a_start]);  
  

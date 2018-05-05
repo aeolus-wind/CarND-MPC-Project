@@ -130,25 +130,12 @@ int main() {
           }
           VectorXd xvals = VectorXd::Map(ptsx.data(), ptsx.size());
           VectorXd yvals = VectorXd::Map(ptsy.data(), ptsy.size());
-          //VectorXd xvals = VectorXd(6);
-          //VectorXd yvals = VectorXd(6);
-          /*
-          for(size_t i = 0; i< ptsx.size(); i++){
-             xvals(i) = ptsx.at(i);
-             yvals(i) = ptsy.at(i);
-          }*/
+          
           auto coeffs = polyfit(xvals, yvals,3);
           double cte = polyeval(coeffs, 0.0);// approx for car being at origin
-          /*
-          double psi_des = 0;
-          //evaluate first derivative of polynomial
-          for(int i = 0; i<coeffs.size(); i++) {
-                psi_des += coeffs(0)*i*pow(px,i-1);
-          }
-          //apply atan
-          psi_des = -atan(psi_des);
-          */
-          double epsi = 0 - atan(coeffs[1]); //we have rotated so that psi is 0 and x  is 0
+          
+
+          double epsi = -atan(coeffs[1]); //we have rotated so that psi is 0 and x  is 0
           VectorXd state(6);
           state << 0, 0, 0, v, cte, epsi;
           
