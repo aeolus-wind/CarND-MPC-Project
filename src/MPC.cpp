@@ -5,8 +5,8 @@ using CppAD::AD;
 using namespace std;
 
 // TODO: Set the timestep length and duration
-size_t N = 15;
-double dt = .17;
+size_t N = 17;
+double dt = .16;
 
 double ref_cte = 0;
 double ref_epsi = 0;
